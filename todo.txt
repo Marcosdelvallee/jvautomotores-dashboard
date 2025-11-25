@@ -1,0 +1,5 @@
+-Imagen de portada a cada auto
+-Mostrar detalles adicionales al clickear en el auto
+-Cambiar imagen de fondo en la parte de arriba
+-Poner logo en algun lado de la pagina
+-Darle un diseño mas moderno a la pagina y mas profesional
