@@ -65,12 +65,12 @@ export function CarCard({ car, onClick }: CarCardProps) {
                 </div>
 
                 <div className="mb-8 text-sm text-slate-600">
-                    <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                         <div className="flex items-center gap-2">
                             <Calendar size={18} className="text-blue-600" />
                             <span className="font-medium text-slate-700">{car.anio}</span>
                         </div>
-                        <div className="w-px h-4 bg-slate-200" />
+                        <div className="hidden md:block w-px h-4 bg-slate-200" />
                         <div className="flex items-center gap-2">
                             <Gauge size={18} className="text-blue-600" />
                             <span className="font-medium text-slate-700">{car.kilometraje} km</span>

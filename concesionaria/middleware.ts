@@ -43,11 +43,17 @@ export async function middleware(request: NextRequest) {
     );
 
     // Refrescar la sesión
-    await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Portero: Proteger rutas del dashboard
+    // Si el usuario intenta acceder a /jv-secure-access-v1/dashboard y no tiene sesión, redirigir al login
+    if (request.nextUrl.pathname.startsWith('/jv-secure-access-v1/dashboard') && !session) {
+        return NextResponse.redirect(new URL('/jv-secure-access-v1', request.url));
+    }
 
     return response;
 }
 
 export const config = {
-    matcher: ['/admin/:path*'],
+    matcher: ['/jv-secure-access-v1/dashboard/:path*'],
 };

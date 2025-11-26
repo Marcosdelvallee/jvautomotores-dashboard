@@ -41,7 +41,7 @@ export default function AdminLogin() {
             if (error) throw error;
 
             if (data.session) {
-                router.push('/admin/dashboard');
+                router.push('/jv-secure-access-v1/dashboard');
                 router.refresh();
             } else {
                 setError('No se pudo crear la sesión');

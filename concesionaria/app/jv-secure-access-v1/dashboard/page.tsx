@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     const checkAuth = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-            router.push('/admin/login');
+            router.push('/jv-secure-access-v1');
         }
     };
 
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        router.push('/admin/login');
+        router.push('/jv-secure-access-v1');
     };
 
     const handleDelete = async (id: string) => {
