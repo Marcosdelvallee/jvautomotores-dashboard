@@ -29,7 +29,7 @@ export function CarCard({ car, onClick }: CarCardProps) {
                 isSold && "opacity-90 grayscale-[0.3]"
             )}
         >
-            <div className="relative h-72 overflow-hidden">
+            <div className="relative h-80 overflow-hidden">
                 <div className="absolute inset-0 bg-slate-200 animate-pulse" />
                 <img
                     src={car.imagen_url}
