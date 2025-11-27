@@ -5,7 +5,7 @@ export default function Loading() {
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900">
             <div className="relative w-64 h-64 mb-8 animate-pulse">
                 <Image
-                    src="/logo-final.png"
+                    src="/logo-loading.png"
                     alt="Cargando..."
                     fill
                     className="object-contain"
