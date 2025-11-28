@@ -15,12 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "JV Automotores | Tu próximo auto te espera",
   description: "Concesionaria premium de vehículos usados y 0km. Calidad, confianza y la mejor financiación.",
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "JV Admin",
-  },
 };
 
 export const viewport: Viewport = {
