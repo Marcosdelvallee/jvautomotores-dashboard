@@ -27,6 +27,7 @@ export interface Vehicle {
     status: string; // 'estado'
     fuel: string; // 'combustible'
     details: string; // 'detalles'
+    position?: number; // Order position for display
     created_at?: string;
 }
 

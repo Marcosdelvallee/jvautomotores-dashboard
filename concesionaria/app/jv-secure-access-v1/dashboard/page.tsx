@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { addVehicle, uploadVehicleImages, getVehicles, deleteVehicle, updateVehicle } from '@/lib/actions';
+import { addVehicle, uploadVehicleImages, getVehicles, deleteVehicle, updateVehicle, updateVehicleOrder, updateAllVehiclePositions } from '@/lib/actions';
 import { Vehicle } from '@/lib/types';
 import {
     LogOut,
@@ -14,7 +14,9 @@ import {
     XCircle,
     Loader2,
     Trash2,
-    Pencil
+    Pencil,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -58,10 +60,16 @@ export default function AdminDashboard() {
     };
 
     const loadVehicles = async () => {
-        setLoading(true);
-        const data = await getVehicles();
-        setVehicles(data);
-        setLoading(false);
+        try {
+            setLoading(true);
+            const data = await getVehicles();
+            setVehicles(data);
+        } catch (err) {
+            console.error('Error loading vehicles:', err);
+            setError('Error al cargar la lista de vehículos. Por favor recarga la página.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleLogout = async () => {
@@ -71,6 +79,9 @@ export default function AdminDashboard() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('¿Estás seguro de que deseas eliminar este vehículo?')) return;
+
+        setError('');
+        setSuccess('');
 
         const result = await deleteVehicle(id);
         if (result.success) {
@@ -82,6 +93,8 @@ export default function AdminDashboard() {
     };
 
     const handleEdit = (vehicle: Vehicle) => {
+        setError('');
+        setSuccess('');
         setEditingId(vehicle.id);
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(vehicle.id);
         setFormData({
@@ -99,6 +112,48 @@ export default function AdminDashboard() {
         });
         setShowForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleMoveUp = async (index: number) => {
+        if (index === 0) return;
+
+        const newVehicles = [...vehicles];
+        // Swap in array
+        [newVehicles[index], newVehicles[index - 1]] = [newVehicles[index - 1], newVehicles[index]];
+
+        // Update positions for ALL vehicles based on new index
+        const updates = newVehicles.map((v, i) => ({
+            id: v.id,
+            position: i
+        }));
+
+        // Update local state with new positions
+        const updatedVehicles = newVehicles.map((v, i) => ({ ...v, position: i }));
+        setVehicles(updatedVehicles);
+
+        // Update in DB
+        await updateAllVehiclePositions(updates);
+    };
+
+    const handleMoveDown = async (index: number) => {
+        if (index === vehicles.length - 1) return;
+
+        const newVehicles = [...vehicles];
+        // Swap in array
+        [newVehicles[index], newVehicles[index + 1]] = [newVehicles[index + 1], newVehicles[index]];
+
+        // Update positions for ALL vehicles based on new index
+        const updates = newVehicles.map((v, i) => ({
+            id: v.id,
+            position: i
+        }));
+
+        // Update local state with new positions
+        const updatedVehicles = newVehicles.map((v, i) => ({ ...v, position: i }));
+        setVehicles(updatedVehicles);
+
+        // Update in DB
+        await updateAllVehiclePositions(updates);
     };
 
     const handleCancel = () => {
@@ -133,6 +188,18 @@ export default function AdminDashboard() {
         if (!files || files.length === 0) return;
 
         const fileArray = Array.from(files);
+
+        // Validar tamaño de archivos (máximo 10MB)
+        const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+        const oversizedFiles = fileArray.filter(file => file.size > MAX_SIZE);
+
+        if (oversizedFiles.length > 0) {
+            setError(`Algunos archivos superan el límite de 10MB: ${oversizedFiles.map(f => f.name).join(', ')}`);
+            // Limpiar el input para permitir nueva selección
+            e.target.value = '';
+            return;
+        }
+
         setSelectedFiles(fileArray);
         setUploadingImage(true);
         setError('');
@@ -149,6 +216,8 @@ export default function AdminDashboard() {
             setError(err.message || 'Error al subir imágenes');
         } finally {
             setUploadingImage(false);
+            // Limpiar el input para permitir subir más imágenes si se desea
+            e.target.value = '';
         }
     };
 
@@ -515,6 +584,9 @@ export default function AdminDashboard() {
                                 <thead className="bg-slate-900/50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                                            Posición
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
                                             Imagen
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
@@ -538,8 +610,26 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-700">
-                                    {vehicles.map((vehicle) => (
+                                    {vehicles.map((vehicle, index) => (
                                         <tr key={vehicle.id} className="hover:bg-slate-700/30 transition">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => handleMoveUp(index)}
+                                                        disabled={index === 0}
+                                                        className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ArrowUp className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleMoveDown(index)}
+                                                        disabled={index === vehicles.length - 1}
+                                                        className="p-1 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                                                    >
+                                                        <ArrowDown className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {vehicle.image_url ? (
                                                     <img
