@@ -10,18 +10,31 @@ import { Vehicle, VehicleInsert } from './types';
 export async function getVehicles(): Promise<Vehicle[]> {
     const supabase = createServerClient();
 
+    // Intento 1: Con ordenamiento por posición (puede fallar si la columna no existe)
     const { data, error } = await supabase
         .from('vehicles')
         .select('*')
         .order('position', { ascending: true })
         .order('created_at', { ascending: false });
 
-    if (error) {
-        console.error('Error fetching vehicles:', error);
+    if (!error) {
+        return data || [];
+    }
+
+    console.warn('Error fetching vehicles with position sort, trying fallback:', error.message);
+
+    // Intento 2: Fallback sin ordenamiento por posición
+    const { data: dataFallback, error: errorFallback } = await supabase
+        .from('vehicles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (errorFallback) {
+        console.error('Error fetching vehicles (fallback):', errorFallback);
         return [];
     }
 
-    return data || [];
+    return dataFallback || [];
 }
 
 /**
