@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { addVehicle, uploadVehicleImages, getVehicles, deleteVehicle, updateVehicle, updateVehicleOrder, updateAllVehiclePositions } from '@/lib/actions';
+import { addVehicle, uploadVehicleImages, uploadVehicleImage, getVehicles, deleteVehicle, updateVehicle, updateVehicleOrder, updateAllVehiclePositions } from '@/lib/actions';
 import { Vehicle } from '@/lib/types';
 import {
     LogOut,
@@ -205,13 +205,31 @@ export default function AdminDashboard() {
         setError('');
 
         try {
-            const result = await uploadVehicleImages(fileArray);
-            if (result.success && result.urls) {
-                setFormData({ ...formData, images: [...formData.images, ...result.urls] });
-                setSuccess(`${result.urls.length} imágenes subidas correctamente`);
-            } else {
-                setError(result.error || 'Error al subir imágenes');
+            const newUrls: string[] = [];
+            let hasError = false;
+
+            // Subir imágenes una por una para evitar exceder el límite de tamaño de la solicitud
+            for (const file of fileArray) {
+                const result = await uploadVehicleImage(file);
+                if (result.success && result.url) {
+                    newUrls.push(result.url);
+                } else {
+                    hasError = true;
+                    console.error('Error uploading file:', file.name, result.error);
+                }
             }
+
+            if (newUrls.length > 0) {
+                setFormData(prev => ({ ...prev, images: [...prev.images, ...newUrls] }));
+                setSuccess(`${newUrls.length} imágenes subidas correctamente`);
+            }
+
+            if (hasError) {
+                setError('Algunas imágenes no se pudieron subir. Intenta con menos archivos o archivos más pequeños.');
+            } else if (newUrls.length === 0) {
+                setError('Error al subir las imágenes.');
+            }
+
         } catch (err: any) {
             setError(err.message || 'Error al subir imágenes');
         } finally {
