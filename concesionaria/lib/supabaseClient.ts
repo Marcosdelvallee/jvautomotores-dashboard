@@ -1,3 +1,4 @@
+// Client-side Supabase client
 import { createBrowserClient } from '@supabase/ssr';
 
 // Validar que las variables de entorno estén configuradas
