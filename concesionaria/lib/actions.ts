@@ -1,6 +1,6 @@
 'use server';
 
-import { createServerClient } from './supabaseClient';
+import { createSupabaseServerClient } from './supabaseServer';
 import { Vehicle, VehicleInsert } from './types';
 
 /**
@@ -8,7 +8,7 @@ import { Vehicle, VehicleInsert } from './types';
  * Esta función puede ser usada en Server Components
  */
 export async function getVehicles(): Promise<Vehicle[]> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     // Intento 1: Con ordenamiento por posición (puede fallar si la columna no existe)
     const { data, error } = await supabase
@@ -42,7 +42,7 @@ export async function getVehicles(): Promise<Vehicle[]> {
  * Requiere autenticación
  */
 export async function addVehicle(vehicle: VehicleInsert): Promise<{ success: boolean; error?: string; data?: Vehicle }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     const { data, error } = await supabase
         .from('vehicles')
@@ -63,7 +63,7 @@ export async function addVehicle(vehicle: VehicleInsert): Promise<{ success: boo
  * Retorna la URL pública de la imagen
  */
 export async function uploadVehicleImage(file: File): Promise<{ success: boolean; url?: string; error?: string }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     // Generar nombre único para el archivo
     const fileExt = file.name.split('.').pop();
@@ -90,7 +90,7 @@ export async function uploadVehicleImage(file: File): Promise<{ success: boolean
 // Upload multiple images and return array of URLs
 export async function uploadVehicleImages(files: File[]): Promise<{ success: boolean; urls?: string[]; error?: string }> {
     try {
-        const supabase = createServerClient();
+        const supabase = await createSupabaseServerClient();
         const urls: string[] = [];
 
         for (const file of files) {
@@ -125,7 +125,7 @@ export async function uploadVehicleImages(files: File[]): Promise<{ success: boo
 
 // Delete a vehicle by id
 export async function deleteVehicle(id: string): Promise<{ success: boolean; error?: string }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     const { error } = await supabase
         .from('vehicles')
@@ -142,7 +142,7 @@ export async function deleteVehicle(id: string): Promise<{ success: boolean; err
 
 // Update a vehicle
 export async function updateVehicle(id: string, vehicle: Partial<VehicleInsert>): Promise<{ success: boolean; error?: string }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     const { error } = await supabase
         .from('vehicles')
@@ -159,7 +159,7 @@ export async function updateVehicle(id: string, vehicle: Partial<VehicleInsert>)
 
 // Update vehicle order
 export async function updateVehicleOrder(id: string, position: number): Promise<{ success: boolean; error?: string }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     const { error } = await supabase
         .from('vehicles')
@@ -176,7 +176,7 @@ export async function updateVehicleOrder(id: string, position: number): Promise<
 
 // Update multiple vehicle positions
 export async function updateAllVehiclePositions(updates: { id: string; position: number }[]): Promise<{ success: boolean; error?: string }> {
-    const supabase = createServerClient();
+    const supabase = await createSupabaseServerClient();
 
     try {
         const promises = updates.map(u =>

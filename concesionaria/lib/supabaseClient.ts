@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
 import { createBrowserClient } from '@supabase/ssr';
 
 // Validar que las variables de entorno estén configuradas
@@ -11,13 +10,4 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createBrowserClient(supabaseUrl, supabaseAnonKey)
   : null as any;
 
-// Cliente de Supabase para Server Components y Server Actions
-export function createServerClient() {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Por favor configura NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY en tu archivo .env.local'
-    );
-  }
-  return createClient(supabaseUrl, supabaseAnonKey);
-}
 
